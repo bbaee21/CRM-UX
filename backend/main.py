@@ -25,4 +25,4 @@ async def add_cors_headers(request, call_next):
 
 app.include_router(templates.router, prefix="/api", tags=["templates"])
 app.include_router(research.router, prefix="/api", tags=["research"])
-app.include_router(issue.router, prefix="/api", tags=["issues"])
+app.include_router(issue.router, prefix="/api", tags=["issue"])
