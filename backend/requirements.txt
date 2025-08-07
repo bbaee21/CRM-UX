@@ -3,7 +3,7 @@ uvicorn[standard]
 python-dotenv
 langchain
 langchain_openai
-langchain_tavily
+langchain-tavily
 openai
 azure-storage-blob
 sqlalchemy[asyncio]
