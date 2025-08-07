@@ -15,9 +15,9 @@ const getBaseURL = () => {
     return apiBase;
   }
   
-  // fallback (실제 백엔드 URL로 교체 필요)
+  // fallback - /api 경로 포함
   console.warn('VITE_API_BASE가 올바르게 설정되지 않았습니다');
-  return 'https://duck-webapp-001.azurewebsites.net'; // 실제 백엔드 URL로 교체
+  return 'duck-webapp-001-g0fhhmbzd3eyevc9.westus3-01.azurewebsites.net/api';
 };
 
 export const api = axios.create({
@@ -27,11 +27,6 @@ export const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-// 테스트 록
-console.log('Environment:', import.meta.env.DEV ? 'development' : 'production');
-console.log('VITE_API_BASE:', import.meta.env.VITE_API_BASE);
-console.log('Final baseURL:', getBaseURL());
 
 // 응답 인터셉터 (에러 처리)
 api.interceptors.response.use(
