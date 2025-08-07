@@ -18,7 +18,6 @@ from langchain_tavily import TavilySearch
 
 from azure.storage.blob import BlobProperties
 from app.services.blob import BlobService
-from app.services.search import pdf_retriever
 
 load_dotenv()
 
@@ -50,6 +49,21 @@ def format_docs(docs: List[Document]) -> str:
 
 _blob = BlobService()
 
+search_retriever = AzureAISearchRetriever(
+    service_name=os.getenv("AZURE_SEARCH_NAME"),
+    index_name=os.getenv("AZURE_SEARCH_INDEX"),
+    api_key=os.getenv("AZURE_SEARCH_KEY"),
+    top_k=5,
+    content_key="chunk",
+)
+
+# Azure Search retriever for PDFs
+pdf_retriever = AzureAISearchRetriever(
+    service_name=os.getenv("AZURE_SEARCH_NAME"),
+    index_name=os.getenv("AZURE_SEARCH_INDEX"),
+    api_key=os.getenv("AZURE_SEARCH_KEY"),
+)
+
 
 def latest_pdf_sync() -> Optional[BlobProperties]:
     """Synchronously fetch the latest PDF using the async BlobService helper."""
@@ -59,15 +73,6 @@ def latest_pdf_sync() -> Optional[BlobProperties]:
         # Already inside an event loop (FastAPI / agent). Use create_task + gather.
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(_blob.latest_pdf())
-
-
-search_retriever = AzureAISearchRetriever(
-    service_name=os.getenv("AZURE_SEARCH_NAME"),
-    index_name=os.getenv("AZURE_SEARCH_INDEX"),
-    api_key=os.getenv("AZURE_SEARCH_KEY"),
-    top_k=5,
-    content_key="chunk",
-)
 
 
 @tool
@@ -115,10 +120,14 @@ def pdf_search(query: str) -> str:
 @tool
 def web_search(query: str) -> str:
     """Search the public web via Tavily (returns top-k snippets)."""
-    tav = TavilySearch(k=3, search_depth="basic")  # max_results → k 로 변경
-    results = tav.invoke(query)  # list[dict]
+    tav = TavilySearch(k=3, search_depth="basic")
+
+    raw = tav.invoke(query)  # dict
+    results = raw.get("results", [])  # 실제 문서 리스트 추출
+
+    # 결과가 dict(list) → Document 변환
     snippets = [
-        f"{item['title']} – {item['content']}"  # 필요하면 URL 추가
+        f"{item['title']} – {item['content']}"
         for item in results
         if isinstance(item, dict)
     ]

@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob import ContentSettings
 
-_CONTAINER = "cust-data"
+_CONTAINER = os.getenv("AZURE_CONTAINER_NAME")
 
 load_dotenv()
 
