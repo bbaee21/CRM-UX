@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+langchain
+langchain_openai
+langchain_tavily
+openai
+azure-storage-blob
+sqlalchemy[asyncio]
+asyncpg
+pydantic
+httpx
+azure-search-documents>=11.4.0
+azure-core>=1.29.5
+azure-storage-blob>=12.19.0
+requests
