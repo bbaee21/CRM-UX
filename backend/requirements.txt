@@ -3,7 +3,8 @@ uvicorn[standard]
 gunicorn
 python-dotenv
 langchain
-langchain_openai
+langchain-openai
+langchain-community
 langchain-tavily
 openai
 azure-storage-blob
