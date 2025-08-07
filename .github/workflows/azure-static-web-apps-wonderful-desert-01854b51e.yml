@@ -47,7 +47,7 @@ jobs:
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "frontend"          # 소스 루트
-          output_location: "frontend/dist"  # 우리가 방금 빌드한 폴더
+          output_location: "dist"  # 우리가 방금 빌드한 폴더
           skip_app_build: true              # ← Oryx 내부 빌드 스킵
 
   close_pull_request_job:
