@@ -5,7 +5,11 @@ from app.api import templates, research, issue
 app = FastAPI(title="CRM")
 
 app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,  # credentials는 False로 설정
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(templates.router, prefix="/api/templates", tags=["templates"])
