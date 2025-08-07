@@ -15,9 +15,9 @@ const getBaseURL = () => {
     return apiBase;
   }
   
-  // fallback - /api 경로 포함
+  // fallback - 실제 백엔드 URL (https:// 포함)
   console.warn('VITE_API_BASE가 올바르게 설정되지 않았습니다');
-  return 'duck-webapp-001-g0fhhmbzd3eyevc9.westus3-01.azurewebsites.net/api';
+  return 'https://duck-webapp-001-g0fhhmbzd3eyevc9.westus3-01.azurewebsites.net/api';
 };
 
 export const api = axios.create({
