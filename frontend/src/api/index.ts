@@ -37,8 +37,3 @@ api.interceptors.response.use(
   }
 );
 
-curl -i -X OPTIONS "duck-webapp-001-g0fhhmbzd3eyevc9.westus3-01.azurewebsites.net/api/issues" \
-  -H "Origin: https://wonderful-desert-01854b51e.2.azurestaticapps.net" \
-  -H "Access-Control-Request-Method: POST" \
-  -H "Access-Control-Request-Headers: content-type"
-
