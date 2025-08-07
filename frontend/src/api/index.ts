@@ -7,7 +7,7 @@ const getBaseURL = () => {
   
   // 개발환경에서는 로컬 백엔드 사용
   if (import.meta.env.DEV) {
-    return apiBase || 'http://localhost:8000';
+    return apiBase || 'http://localhost:8000/api';
   }
   
   // 프로덕션에서는 반드시 https://로 시작하는 완전한 URL 사용
