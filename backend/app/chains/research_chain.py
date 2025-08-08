@@ -100,10 +100,37 @@ def pdf_search(query: str) -> str:
         max_tokens=400,
     )
 
-    prompt = ChatPromptTemplate.from_template(
-        "You are a senior UX researcher. Use ONLY the context.\n"
-        "Context:\n{context}\n\nQuestion: {question}\nAnswer in Korean:"
+    # Few-shot examples injected into the prompt (structure-preserving)
+    examples_text = (
+        "# Examples\n"
+        "Example 1\n"
+        "Context:\n"
+        "- 장바구니 이탈율이 62%로 높음\n"
+        "- 모바일에서 결제 페이지 로딩이 3.2s → 전환율 저하\n"
+        "Question: 장바구니 이탈을 낮추려면?\n"
+        "Answer (Korean):\n"
+        "• 로딩 원인(이미지/스크립트)을 줄이고 결제 페이지 TTFB 목표 1s 이하로 개선\n"
+        "• 장바구니 보존 기간을 7일로 늘리고, 이어하기 CTA를 상단 고정\n"
+        "• 실패한 결제 재시도 유도 배너 및 고객센터 진입 동선 추가\n\n"
+        "Example 2\n"
+        "Context:\n"
+        "- 신규 유입은 많으나 온보딩 튜토리얼 이탈률 45%\n"
+        "- 튜토리얼 길이 12단계, 핵심 가치 제시가 늦음\n"
+        "Question: 온보딩 완주율을 올리려면?\n"
+        "Answer (Korean):\n"
+        "• 3~5단계로 축소하고 첫 10초 내 핵심 가치(혜택)를 먼저 제시\n"
+        "• 단계별 진행률/보상 표시, 건너뛰기 후 재진입 경로 제공\n"
+        "• 마이크로 카피로 사용자의 다음 행동을 구체적으로 안내\n"
     )
+
+    prompt = ChatPromptTemplate.from_template(
+        "You are a senior UX researcher. Use ONLY the context.\n\n"
+        "{examples}\n\n"
+        "Context:\n{context}\n\n"
+        "Question: {question}\n"
+        "Answer in Korean as 3-5 concise bullet points using only facts from Context. "
+        "If information is missing, reply: '문서에서 답을 찾을 수 없습니다.'"
+    ).partial(examples=examples_text)
 
     chain = (
         {

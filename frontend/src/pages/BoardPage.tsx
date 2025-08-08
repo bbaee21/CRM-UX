@@ -1,5 +1,6 @@
-import { useReducer, useState, useCallback } from "react";
+import { useReducer, useState, useCallback, useEffect } from "react";
 import { api } from "../api";
+import { useLocation } from "react-router-dom";
 import {
   DndContext,
   PointerSensor,
@@ -47,38 +48,86 @@ const sevColor: Record<Severity, string> = {
   Low: "bg-green-500",
 };
 
+
+function buildStateFromData(data: any): State {
+  const next: State = { Dev: [], PM: [], Design: [] };
+  const sev = (data?.severity as Severity) ?? "Medium";
+  const normalize = (v: unknown): string[] => {
+    if (!v) return [];
+    if (Array.isArray(v)) return v as string[];
+    if (typeof v === "object") return Object.values(v as Record<string, string>);
+    return [];
+  };
+  (roles as Role[]).forEach((role) => {
+    const items = normalize(data?.tasks?.[role]);
+    items.forEach((t: string, idx: number) => {
+      next[role].push({
+        id: `${role}-${Date.now()}-${idx}`,
+        title: t,
+        severity: sev,
+      });
+    });
+  });
+  return next;
+}
+
 export default function BoardPage() {
   const [state, dispatch] = useReducer(boardReducer, emptyState);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor));
+  const location = useLocation();
 
   /* -------- ask research → create issue -------- */
-  const createIssue = useCallback(async () => {
-    if (!question.trim()) return;
+  const createIssue = useCallback(async (seed?: string) => {
+    if (loading) return; // prevent double submit
+    const raw = (typeof seed === "string" ? seed : undefined) ?? question;
+    const q = (raw ?? "").toString().trim();
+    if (!q) return;
     setLoading(true);
     try {
-      const { data } = await api.post("/issues", { question });
-      /* data.tasks = {Dev:[...], PM:[...], ...} */
-      const next: State = { Dev: [], PM: [], Design: [] };
+      const { data } = await api.post("/issues", { question: q });
 
-      (Object.keys(data.tasks) as Role[]).forEach((role) => {
-        data.tasks[role].forEach((t: string, idx: number) => {
+      // Build board state directly from returned tasks
+      const next: State = { Dev: [], PM: [], Design: [] };
+      const sev = (data?.severity as Severity) ?? "Medium";
+      (Object.keys(data?.tasks || {}) as Role[]).forEach((role) => {
+        (data.tasks[role] || []).forEach((t: string, idx: number) => {
           next[role].push({
             id: `${role}-${Date.now()}-${idx}`,
             title: t,
-            severity: data.severity as Severity,
+            severity: sev,
           });
         });
       });
 
-      dispatch({ type: "SET", payload: next });  // 🔄 전체 교체
-      setQuestion("");
+      dispatch({ type: "SET", payload: next });
+      if (!seed) setQuestion("");
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || err?.message || "Failed to create issue";
+      alert(msg);
     } finally {
       setLoading(false);
     }
-  }, [question]);
+  }, [question, loading]);
+
+  useEffect(() => {
+    const st = (location.state as any) || {};
+    const seed: string | undefined = st?.seed;
+    const prefill: any | undefined = st?.prefill;
+    if (prefill && prefill.tasks) {
+      // Directly render provided data
+      dispatch({ type: "SET", payload: buildStateFromData(prefill) });
+      // Keep the previous input content if provided
+      if (seed && seed.trim()) setQuestion(seed);
+      return;
+    }
+    if (seed && seed.trim()) {
+      setQuestion(seed);
+      void createIssue(seed);
+    }
+  }, [location.state, createIssue]);
 
   /* -------- drag end -------- */
   function handleDragEnd(e: any) {
@@ -114,8 +163,8 @@ export default function BoardPage() {
 
   /* -------- render -------- */
   return (
-    <section className="p-6 max-w-7xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Research → Issue Board</h2>
+    <section className="mx-auto max-w-4xl px-6 py-10">
+      <h2 className="text-2xl font-semibold mb-6">Issue Board</h2>
 
       {/* 질문 입력 */}
       <div className="flex mb-6 gap-2">
@@ -126,7 +175,7 @@ export default function BoardPage() {
           onChange={(e) => setQuestion(e.target.value)}
         />
         <button
-          onClick={createIssue}
+          onClick={() => createIssue()}
           disabled={loading}
           className="border px-4 py-2 rounded bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50"
         >
@@ -146,13 +195,15 @@ export default function BoardPage() {
             <div key={role} className="w-1/3 min-w-[260px]">
               <h3 className="font-semibold mb-2 flex items-center gap-2">
                 {role}
-                <span className="text-xs text-gray-500">
-                  {state[role].length}
-                </span>
+                {state[role].length > 0 && (
+                  <span className="text-xs text-gray-500">
+                    {state[role].length}
+                  </span>
+                )}
               </h3>
 
               <SortableContext
-                items={state[role]}
+                items={state[role].map((c) => c.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className="space-y-2">

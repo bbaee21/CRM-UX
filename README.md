@@ -10,6 +10,11 @@
    - Web Search(최신 기사·블로그)
    - 둘을 하이브리드로 검색하여 Q &A
 3. **Issue Board** – 리서치 결과를 Dev/PM/Design 세 컬럼 Kanban 으로 분배 ▶ Slack Incoming Webhook으로 실시간 공지
+4. 접속 URL
+
+```
+https://wonderful-desert-01854b51e.2.azurestaticapps.net
+```
 
 
 
@@ -38,7 +43,7 @@
 ┌──────────────────┐
 │  React+TS (Vite) │ ① UX조사·캠페인 입력
 └────────┬─────────┘
-         │ REST/SignalR
+         │ REST
 ┌────────▼──────────┐
 │ FastAPI (Python)  │ ② 인증·비즈로직
 │  - LangChain      │ ③ LLM Flow
@@ -54,14 +59,6 @@
 ```
 
 
-
-- **LLM Flow**  LangChain Graph 노드
-
-  1. ResearchQAChain: 질문+메타데이터 → RAG 답변
-  2. TemplateGenChain: 퍼널·톤·컨텍스트 → 카피 제안
-  3. ABEvalChain: 실적 JSON → LLM이 개선점 요약
-
-  
 
 ------
 
